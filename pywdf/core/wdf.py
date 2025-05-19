@@ -4,7 +4,11 @@ import numpy as np
 
 class baseWDF:
     def __init__(self) -> None:
-        self.a, self.b = 0, 0
+        self.a = 0.0
+        self.b = 0.0
+        # Added default values for impedance and admittance
+        self.r = 1.0e-9         # impedance 
+        self.g = 1.0 / self.r   # admittance 
         self.parent = None
 
     def connect_to_parent(self, parent: baseWDF) -> None:
@@ -19,7 +23,11 @@ class baseWDF:
             self.parent.impedance_change()
 
     def wave_to_voltage(self) -> float:
-        return (self.a + self.b) / 2.0
+        return (self.a + self.b) * 0.5
+
+    # Added base class method to convert wave to current according to WDF parametric definition
+    def wave_to_current(self) -> float:
+        return (self.a - self.b) * 0.5 * self.g   
 
     def reset(self) -> None:
         self.a, self.b = 0, 0
@@ -54,8 +62,10 @@ class ShortCircuit(baseWDF):
         self.calc_impedance()
 
     def calc_impedance(self) -> None:
-        self.Rp = 0
-        self.G = 1e16
+        # self.Rp = 0
+        # self.G = 1e16  
+        self.Rp = 1e-16  # short circuit has zero resistance, here we set it to a very small value
+        self.G = 1.0 / self.Rp  # set the conductance to a very large value
 
     def accept_incident_wave(self, a: float) -> None:
         self.a = a
@@ -74,8 +84,10 @@ class OpenCircuit(baseWDF):
         self.calc_impedance()
 
     def calc_impedance(self) -> None:
-        self.Rp = 0
-        self.G = 1e16
+        # self.Rp = 0
+        # self.G = 1e16  
+        self.Rp = 1e16  # open circuit has infinite resistance, here we set it to a very large value
+        self.G = 1.0 / self.Rp  # set the conductance to a very small value
 
     def accept_incident_wave(self, a: float) -> None:
         self.a = a
