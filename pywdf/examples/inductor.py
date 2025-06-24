@@ -11,8 +11,7 @@ from core.wdf import *
 from core.circuit import Circuit
 
 
-class LCOscillator(Circuit):
-
+class _Inductor(Circuit):
     def __init__(
         self,
         sample_rate: int,
@@ -20,7 +19,7 @@ class LCOscillator(Circuit):
         decibels: float = -18,
         closed: bool = True,
     ) -> None:
-
+    
         self.fs = sample_rate
         self.frequency = frequency
         self.decibels = decibels
@@ -28,39 +27,26 @@ class LCOscillator(Circuit):
         self.closed = closed
 
         # initialize wdf
-        self.C = 1.0e-6
         self.L = 1.0e3
         self.twopi = 2 * np.pi
 
-        self.C1 = Capacitor(self.C, self.fs)
         self.L1 = Inductor(self.L, self.fs)
-        self.S2 = SeriesAdaptor(self.C1, self.L1)
 
         self.Vs = ResistiveVoltageSource()
-        self.S1 = SeriesAdaptor(self.Vs, self.S2)
+        self.S1 = SeriesAdaptor(self.Vs, self.L1)
 
-        self.SW1 = Switch(self.S1)
+        # self.SW1 = Switch(self.S1)
 
         # init and set circuit
-        super().__init__(self.Vs, self.SW1, self.C1)
+        super().__init__(self.Vs, self.S1, self.C1)
+        # super().__init__(self.Vs, self.SW1, self.C1)
         self.set_params(self.frequency, self.closed, self.decibels)
 
-
-
-    def process_sample(
-        self, 
-        sample: float
-    ) -> float:
-    
+    def process_sample(self, sample: float) -> float:
         return super().process_sample(sample) * self.gain
 
-
-
     def set_params(
-        self, 
-        frequency: float,
-        switch_closed: bool,
-        decibels: float
+        self, frequency: float, switch_closed: bool, decibels: float
     ) -> None:
 
         # update frequency
@@ -91,20 +77,17 @@ if __name__ == "__main__":
     decibels = 0
     switch_closed = True
 
-    lc_oscillator = LCOscillator(fs)
-    lc_oscillator.set_params(frequency, switch_closed, decibels)  # update params
+    _inductor = _Inductor(fs)
+    _inductor.set_params(frequency, switch_closed, decibels)  # update params
 
     # plot transfer function
-    plt_dir = src_dir.parent / "tests" / "plots"
+    plt_dir = src_dir.parent / "data" / "plot"
     plt_dir.mkdir(exist_ok=True, parents=True)
     out_path = plt_dir / f"{script_path.stem}_{frequency}Hz.png"
-    
-    lc_oscillator.plot_freqz(
-        out_path
-    )
+    _inductor.plot_freqz(out_path)
 
     # generate sinusoid
-    out = lc_oscillator.process_signal(np.ones((int(fs))))
+    out = _inductor.process_signal(np.ones((int(fs))))
     out = out - 1  # remove DC offset [0, 2]
 
     plt.figure(figsize=(10, 4))
@@ -112,18 +95,10 @@ if __name__ == "__main__":
     plt.xlim([0, fs])
     plt.title(f"{frequency}Hz sinewave")
     plt.tight_layout()
-    out_path = plt_dir / f"{script_path.stem}_signal.png"
-    plt.savefig(out_path.with_suffix('.png'))
     plt.show()
 
-
     # estimate pitch using zerocrossing
-    zero_crossings = np.where(
-                        np.diff(
-                            np.sign(out)
-                        )
-                    )[0]
-    
+    zero_crossings = np.where(np.diff(np.sign(out)))[0]
     T = (zero_crossings[2] - zero_crossings[0]) / fs
     f = 1 / T
     print(f"T = {T:.6f}[s]\nf = {f:.3f}[Hz]")

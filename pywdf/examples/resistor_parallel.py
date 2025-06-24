@@ -24,6 +24,11 @@ class VoltageDivider(Circuit):
     def set_R2(self,new_R):
         self.R2.set_resistance(new_R)
 
+
+    def process_sample(self, sample: float) -> float:
+        # return super().process_sample(sample) + self.R1.wave_to_voltage() + self.C1.wave_to_voltage()
+        pass
+
 if __name__ == '__main__':
     vd = VoltageDivider(44100, 1e5, 1e10)
     vd.plot_freqz()
