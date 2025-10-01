@@ -1,7 +1,3 @@
-# Chua's Circuit example using WDF following the principles of Meerkotter and Scholz 1989.
-# "Digital simulation of nonlinear circuits by wave digital filter principles"
-
-
 import matplotlib.pyplot as plt
 from pathlib import Path
 import sys
@@ -33,8 +29,7 @@ class Chua(Circuit):
 
         # initialize wdf
         self.C1_value = 5.5e-9
-        self.R2_value = 1.3e3
-        # self.R2_value = 1.428e3
+        self.R2_value = 1.428e3
         self.L3_value = 7.07e-3
         self.C4_value = 49.5e-9
 
@@ -43,12 +38,15 @@ class Chua(Circuit):
         self.L3 = Inductor(self.L3_value, self.fs)     # fs, needs local discretization
         self.C4 = Capacitor(self.C4_value, self.fs)    # fs, needs local discretization
 
-        # self.Vs = ParallelVoltage(self.C4)
-
-        self.Vs = SeriesVoltage(self.C4)
+        # voltage injection with impulse for agitation ang getting oscillations started, given the system will always initialize with zeros, 
+        # vInject(i) = wdf.series_voltage(i, button("impulse")*5 : ba.impulsify);
+        self.Vs = ResistiveVoltageSource()
+        # self.S2 = SeriesAdaptor(self.C4, self.Vs)
+        # self.S2 = SeriesAdaptor(self.Vs, self.C4)
+        # self.S2 = ParallelAdaptor(self.C4, self.Vs)
         self.P2 = ParallelAdaptor(self.L3, self.Vs)
         self.S1 = SeriesAdaptor(self.P2, self.R2)
-        self.P1 = ParallelAdaptor(self.S1, self.C1)
+        self.P1 = ParallelAdaptor(self.S1, self.C1 )
 
         self.g1 = -500.0e-6 
         self.g2 = -800.0e-6
@@ -62,7 +60,18 @@ class Chua(Circuit):
             v0=self.v0,         # Voltage parameter
             r1=self.R_NL,       # Resistance in Ohms
         )     
-        
+
+
+        # self.S2 = SeriesAdaptor(self.C1, self.L1)
+        # self.Vs = ResistiveVoltageSource()
+        # self.S1 = SeriesAdaptor(self.Vs, self.S2)
+
+        # self.SW1 = Switch(self.S1)
+
+        # # init and set circuit
+        # super().__init__(self.Vs, self.SW1, self.C1)
+        # self.set_params(self.frequency, self.closed, self.decibels)
+
         # init and set circuit
         super().__init__(self.Vs, self.NL, self.C1)
 
@@ -97,6 +106,8 @@ class Chua(Circuit):
         return self.output.wave_to_voltage(), self.C4.wave_to_voltage(), self.L3.wave_to_current() 
 
 
+
+
     def set_params(
         self, 
         frequency: float,
@@ -122,9 +133,9 @@ class Chua(Circuit):
 if __name__ == "__main__":
 
     # set params
-    # fs = 48e3       # doesn't work for this sample rate
-    # fs = 96e3
-    fs = 100e3
+    fs = 48e3
+    frequency = 440
+    decibels = 0
    
     chua_circuit = Chua(fs)
     # chua_circuit.set_params(frequency, decibels)  # update params
@@ -132,27 +143,46 @@ if __name__ == "__main__":
     # plot transfer function
     plt_dir = src_dir.parent / "tests" / "plots"
     plt_dir.mkdir(exist_ok=True, parents=True)
-    out_path = plt_dir / f"{script_path.stem}_{fs}Hz.png"
+    out_path = plt_dir / f"{script_path.stem}_{frequency}Hz.png"
     
+    # chua_circuit.plot_freqz(
+    #     out_path
+    # )
+
+    # chua_circuit.AC_transient_analysis(
+    #     freq = 1000,
+    #     amplitude = 1,
+    #     t_ms = 5,
+    #     outpath="tests/chua_ac_analysis.png"
+    #     )
+
+    # chua_circuit.plot_impulse_response(
+    #     outpath="tests/chua_impulse_response.png"
+    #     )
+    # num_impulses = 4  # number of impulses to generate
+    # impulse_frequency = 10  # duration of impulse signal in samples
+    # # samples = np.zeros((int(impulse_frequency * fs / 1000)))  # 500 ms impulse signal
+    # samples = np.zeros((int(impulse_frequency * num_impulses)))  # 500 ms impulse signal
+    # samples[::impulse_frequency] = 1.0  # impulse signal
 
     a = np.ones(1)  # impulse signal
-    b = np.zeros(2400) 
+    b = np.zeros(500) 
     samples = np.concatenate((a, b))
-    
+
+
     i_list, v1_list, v2_list = [], [], []
 
     for s in samples:
         v1, v2, i = chua_circuit.process_sample_chua(s)
+        i_list.append(i)
         v1_list.append(v1)
         v2_list.append(v2)
-        i_list.append(i)
 
     # Plotting
     fig, axes = plt.subplots(1, 3, figsize=(15, 4))
-    axes[0].plot(v1_list, label='C1 [V]', color='r')
-    axes[1].plot(v2_list, label='C4 [V]', color='g')
-    axes[2].plot(i_list, label='L3 [I]', color='b')
-
+    axes[0].plot(v1_list, label='Amplitude C1 [V]', color='r')
+    axes[1].plot(v2_list, label='Amplitude C4 [V]', color='g')
+    axes[2].plot(i_list, label='Amplitude L3 [I]', color='b')
 
     for ax in axes:
         ax.legend()
@@ -171,15 +201,4 @@ if __name__ == "__main__":
     plt.show()
 
 
-    # 3D Phase Portrait
-    fig = plt.figure(figsize=(8, 6))
-    ax = fig.add_subplot(111, projection='3d')
-    ax.plot(v1_list, v2_list, i_list, lw=1.0)
-    ax.set_title("3D Phase Portrait of Chua's Circuit WDF")
-    ax.set_xlabel("x C1 [V]")
-    ax.set_ylabel("y C4 [V]")
-    ax.set_zlabel("z L3 [I]")
-    plt.tight_layout()
-    out_path = plt_dir / f"{script_path.stem}_WDF_attractor.png"
-    plt.savefig(out_path.with_suffix('.png'))
-    plt.show()
+

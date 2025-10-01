@@ -33,12 +33,19 @@ The <code>core</code> directory contains the main source code of the repository.
 ├── setup.py
 ```
 
-## Usage
+## Interactive Debugging
+
 
 ```
 python3 -m debugpy --wait-for-client --listen 5678 pywdf/examples/chua_circuit.py
 ```
 
+
+
+
+
+
+## Usage
 
 ```python
 from pywdf import RCA_MK2_SEF, DiodeClipper, TR_808_HatResonator

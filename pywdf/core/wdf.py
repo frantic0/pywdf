@@ -1,5 +1,14 @@
 from __future__ import annotations
 import numpy as np
+from enum import Enum
+import math 
+
+class Transform(Enum):
+    BILINEAR = 1
+    WARPED_BILINEAR = 2
+    BACKWARD_EULER = 3
+    ALPHA = 4
+    MOBIUS = 5
 
 
 class baseWDF:
@@ -131,7 +140,13 @@ class Resistor(baseWDF):
 
 
 class Capacitor(baseWDF):
-    def __init__(self, C: float, fs: int, tolerance: float = 0) -> None:
+    def __init__(
+            self, 
+            C: float, 
+            fs: int, 
+            tolerance: float = 0,
+            alpha: float = 1.0      # 0.0 – Backward Euler; 1.0 – Bilinear Transform 
+        ) -> None:
 
         baseWDF.__init__(self)
         self.fs = fs
@@ -139,7 +154,16 @@ class Capacitor(baseWDF):
         rand_samp = np.random.normal(loc=0, scale=C * tolerance / 2)
         self.C = C + rand_samp
         self.z = 0
+        self.setAlpha(alpha)
         self.calc_impedance()
+
+
+    def setAlpha(self, alpha: float) -> None:
+        self.alpha = alpha
+        self.b_coef = (1.0 - alpha) / 2.0
+        self.a_coef = (1.0 + alpha) / 2.0
+        self.impedance_change()
+
 
     def prepare(self, new_fs: int) -> None:
         self.fs = new_fs
@@ -151,20 +175,26 @@ class Capacitor(baseWDF):
             self.C = new_C
             self.impedance_change()
 
-    def calc_impedance(self) -> None:
-        '''
-        Local discretisation of capacitor using the warped bilinear transform method.
+    # def calc_impedance(self) -> None:
+    #     '''
+    #     Local discretisation of capacitor using the warped bilinear transform method.
 
-                    1
-        Z_C = --------------
-                2 * C * f_s
+    #                 1
+    #     Z_C = --------------
+    #             2 * C * f_s
         
-        where f_s is the sampling frequency and C the capacitance.
-        '''
+    #     where f_s is the sampling frequency and C the capacitance.
+    #     '''
         
-        self.Rp = 1.0 / (2 * self.C * self.fs)
+    #     self.G = 1.0 / self.Rp
+
+
+    def calc_impedance(
+            self, 
+        ) -> None:
+
+        self.Rp = 1.0 / ( ( 1.0 + self.alpha ) * self.C * self.fs)
         self.G = 1.0 / self.Rp
-
 
     def accept_incident_wave(self, a: float) -> None:
         self.a = a
@@ -183,13 +213,20 @@ class Capacitor(baseWDF):
 
 
 class Inductor(baseWDF):
-    def __init__(self, L: float, fs: int) -> None:
+    def __init__(self, 
+                L: float, 
+                fs: int,
+                alpha: float = 1.0
+        ) -> None:
         '''
         TODO: Why does inductor have a different constructor than capacitor?
         '''
         self.fs = fs
         self.L = L
-        self.z = 0
+        self.z = 0.0
+        self.alpha = alpha
+        self.b_coef = (1.0 - alpha) / 2.0
+        self.a_coef = (1.0 + alpha) / 2.0        
         self.calc_impedance()
 
     def prepare(self, new_fs: int) -> None:
@@ -197,21 +234,33 @@ class Inductor(baseWDF):
         self.impedance_change()
         self.reset()
 
+    def setAlpha(self, alpha: float) -> None:
+        self.alpha = alpha
+        self.b_coef = (1.0 - alpha) / 2.0
+        self.a_coef = (1.0 + alpha) / 2.0
+        self.impedance_change()
+
     def set_inductance(self, new_L: float) -> None:
         if self.L != new_L:
             self.L = new_L
             self.impedance_change()
 
-    def calc_impedance(self) -> None:
-        self.Rp = 2 * self.L * self.fs
-        self.G = 1.0 / self.Rp
+    def calc_impedance(
+            self
+        ) -> None:
 
+        self.Rp = (1.0 + self.alpha ) * self.L * self.fs
+
+        self.G = 1.0 / self.Rp
+    
     def accept_incident_wave(self, a: float) -> None:
         self.a = a
         self.z = self.a
 
     def propagate_reflected_wave(self) -> float:
         self.b = -self.z
+        self.b = self.b_coef * self.b - self.a_coef * self.z
+
         return self.b
 
     def reset(self) -> None:
@@ -223,7 +272,10 @@ class Inductor(baseWDF):
 
 
 class ParallelAdaptor(baseWDF):
-    def __init__(self, p1: baseWDF, p2: baseWDF) -> None:
+    def __init__(self, 
+                 p1: baseWDF, 
+                 p2: baseWDF
+        ) -> None:
         baseWDF.__init__(self)
         self.p1 = p1
         self.p2 = p2
@@ -332,6 +384,30 @@ class PolarityInverter(baseWDF):
 
 
 ####################################################################################
+
+
+class SVoltage(baseWDF):
+    
+    def __init__(self, p1: baseWDF) -> None:
+        baseWDF.__init__(self)
+        p1.connect_to_parent(self)
+        self.p1 = p1
+        self.calc_impedance()
+
+    def calc_impedance(self) -> None:
+        self.Rp = self.p1.Rp
+        self.G = 1.0 / self.Rp
+
+    def set_voltage(self, new_V: float) -> None:
+        self.Vs = new_V
+
+    def accept_incident_wave(self, a: float) -> None:
+        self.a = a
+        self.p1.accept_incident_wave( -(a + self.Vs) )  # Incident wave is the negative of the voltage source
+
+    def propagate_reflected_wave(self) -> float:
+        self.b = -( self.a + self.Vs )
+        return self.b
 
 
 class SeriesVoltage(baseWDF):
@@ -526,8 +602,7 @@ class ChuaDiode(rootWDF):
         g2 = (1.0 - self.G2 * self.R1) / (1.0 + self.G2 * self.R1)
         a_0 = self.V0 * (1.0 + self.G2 * self.R1)
         
-        self.b = (
-            g1 * self.a + 0.5 * (g2 - g1) * (abs( self.a + a_0 ) - abs( self.a - a_0 )))
+        self.b = ( g1 * self.a + 0.5 * (g2 - g1) * (abs( self.a + a_0 ) - abs( self.a - a_0 )))
         
         return self.b
         

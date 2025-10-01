@@ -33,8 +33,9 @@ class Chua(Circuit):
 
         # initialize wdf
         self.C1_value = 5.5e-9
-        self.R2_value = 1.3e3
+        # self.R2_value = 1.215e3
         # self.R2_value = 1.428e3
+        self.R2_value = 1.8e3
         self.L3_value = 7.07e-3
         self.C4_value = 49.5e-9
 

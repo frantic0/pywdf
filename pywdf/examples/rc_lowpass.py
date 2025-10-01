@@ -38,9 +38,7 @@ if __name__ == "__main__":
     
     lpf = RCLowPass(44100, 1000)
     
-    lpf.plot_freqz(
-        outpath="tests/rc_lowpass_freqz.png"
-        )
+    lpf.plot_freqz( outpath="tests/rc_lowpass_freqz.png" )
     
     lpf.plot_freqz_list(
         range(1000, 10000, 1000), 
@@ -56,8 +54,6 @@ if __name__ == "__main__":
         outpath="tests/rc_lowpass_ac_analysis.png"
         )
     
-    lpf.plot_impulse_response(
-        outpath="tests/rc_lowpass_impulse_response.png"
-        )
+    lpf.plot_impulse_response( outpath="tests/rc_lowpass_impulse_response.png" )
     
     print("done")

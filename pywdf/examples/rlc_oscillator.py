@@ -21,6 +21,7 @@ class LCOscillator(Circuit):
         closed: bool = True,
     ) -> None:
 
+        self.n_sample = 0.0
         self.fs = sample_rate
         self.frequency = frequency
         self.decibels = decibels
@@ -45,8 +46,7 @@ class LCOscillator(Circuit):
 
         # init and set circuit
         super().__init__(self.Vs, self.SW1, self.C1)
-        
-        self.set_params(self.frequency, self.closed, self.decibels)
+        # self.set_params(self.frequency, self.closed, self.decibels)
 
 
 
@@ -54,15 +54,23 @@ class LCOscillator(Circuit):
         self, 
         sample: float
     ) -> float:
-    
-        # self.Vs.set_voltage(sample)
+
+        # if self.n_sample == 24000: 
+        #     self.Vs.set_resistance(1)
+
+
+
+
+        # # self.Vs.set_voltage(sample)
         # self.NL.accept_incident_wave(self.P1.propagate_reflected_wave())
         # self.P1.accept_incident_wave(self.NL.propagate_reflected_wave())
 
         # return self.output.wave_to_voltage()
 
+        self.n_sample += 1
 
-        return super().process_sample(sample) * self.gain
+        return super().process_sample(sample) * self.gain, self.Vs.wave_to_current(), self.Vs.wave_to_voltage()
+
 
 
     def set_params(
@@ -72,12 +80,18 @@ class LCOscillator(Circuit):
         decibels: float
     ) -> None:
 
+        self.Vs.set_resistance(100) # 
+        # self.Vs.set_resistance(1)
+        # self.Vs.set_resistance(1e-3)
+
         # update frequency
         if self.frequency != frequency:
             self.frequency = frequency
 
             self.L = 1.0 / (np.square(self.twopi * frequency) * self.C)
             self.L1.set_inductance(self.L)
+        
+
 
         # update switch status
         if switch_closed != self.closed:
@@ -88,15 +102,17 @@ class LCOscillator(Circuit):
             self.decibels = decibels
             self.gain = self.decibels_to_gain()
 
+
     def decibels_to_gain(self):
         return 10 ** (self.decibels / 20.0)
+
 
 
 if __name__ == "__main__":
 
     # set params
     fs = 48e3
-    frequency = 10
+    frequency = 100
     decibels = 0
     switch_closed = True
 
@@ -113,7 +129,7 @@ if __name__ == "__main__":
     )
 
     a = np.ones(1)  # impulse signal
-    b = np.zeros(24000) 
+    b = np.zeros(48000) 
     samples = np.concatenate((a, b))
 
     # generate sinusoid
@@ -128,4 +144,3 @@ if __name__ == "__main__":
     out_path = plt_dir / f"{script_path.stem}_signal.png"
     plt.savefig(out_path.with_suffix('.png'))
     plt.show()
-
