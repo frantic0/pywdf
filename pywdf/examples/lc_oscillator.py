@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
     # set params
     fs = 48e3
-    frequency = 10
+    frequency = 1000
     decibels = 0
     switch_closed = True
 
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     )
 
     a = np.ones(1)  # impulse signal
-    b = np.zeros(24000) 
+    b = np.zeros(48000) 
     samples = np.concatenate((a, b))
 
     # generate sinusoid

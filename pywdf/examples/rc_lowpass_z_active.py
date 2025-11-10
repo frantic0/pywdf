@@ -64,7 +64,7 @@ class RCLowPass(Circuit):
         self.previous_i = self.R1.wave_to_current()
 
         # self.R1.set_voltage( self.previous_i * self.R*.5 )      # works well
-        self.R1.set_voltage( self.previous_i * 10 )               # blows up 
+        self.R1.set_voltage( self.previous_i * -10 )               # blows up 
         # self.R1.set_voltage( self.previous_i * 100 )            # blows up !!!
         # self.R1.set_voltage( sample + self.previous_i * self.R )  # returns 0.0s 
 

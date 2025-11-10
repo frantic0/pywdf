@@ -2,18 +2,6 @@ import numpy as np
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 
-from pathlib import Path
-import sys
-
-script_path = Path(__file__).resolve()
-src_dir = script_path.parent.parent
-
-sys.path.append(str(src_dir))
-
-plt_dir = src_dir.parent / "tests" / "plots"
-plt_dir.mkdir(exist_ok=True, parents=True)
-
-
 # Parameters
 alpha = 15.6                        # C2 / C1                      
 beta = 28                           # C2 * R2 / L
@@ -34,7 +22,7 @@ def chua(t, state):
     return [dx, dy, dz]
 
 # Simulation
-t_span = (0, 150)
+t_span = (0, 300)
 t_eval = np.linspace(*t_span, 10000)
 initial_state = [0.1, 0.0, 0.0]
 
@@ -45,7 +33,7 @@ t = sol.t
 x, y, z = sol.y
 
 # Plot time series of x, y, z
-plt.figure(figsize=(6, 6))
+plt.figure(figsize=(12, 8))
 
 plt.subplot(3, 1, 1)
 plt.plot(t, x, color='blue')

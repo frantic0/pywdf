@@ -29,15 +29,15 @@ class ChuaMinimal(Circuit):
         self.output_gain_db = output_gain_db
 
         self.R = 2.5e3  # Ohms
+        self.C = 1.0e-6
+        self.L3_value = 7.07e-3     # L3 inductance
 
+        self.L3 = Inductor(self.L3_value, self.fs)     
         self.R1 = Resistor(self.R)
         self.Vs = ResistiveVoltageSource()
-
         self.S1 = SeriesAdaptor(self.Vs, self.R1)
-
-        # self.C = 1.0e-6
-        # self.C1 = Capacitor(self.C, self.fs)
-        # self.P1 = ParallelAdaptor(self.S1, self.C1)
+        self.C1 = Capacitor(self.C, self.fs)
+        self.P1 = ParallelAdaptor(self.S1, self.C1)
 
         self.g1 = -500.0e-6 
         self.g2 = -800.0e-6
@@ -50,7 +50,6 @@ class ChuaMinimal(Circuit):
             g2=self.g2,         #  parameter 2
             v0=self.v0,         # Voltage parameter
             r1=self.R_NL,       # Resistance in Ohms
-
         )    
         
         # super().__init__(self.Vs, self.NL, self.C1)
@@ -62,7 +61,7 @@ class ChuaMinimal(Circuit):
 
 if __name__ == "__main__":
 
-    fs = 48e3
+    fs = 100e3
     frequency = 1000
 
     cm = ChuaMinimal(44100, cutoff=5000, input_gain_db=5)
