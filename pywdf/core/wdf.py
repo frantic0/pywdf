@@ -386,30 +386,6 @@ class PolarityInverter(baseWDF):
 ####################################################################################
 
 
-class SVoltage(baseWDF):
-    
-    def __init__(self, p1: baseWDF) -> None:
-        baseWDF.__init__(self)
-        p1.connect_to_parent(self)
-        self.p1 = p1
-        self.calc_impedance()
-
-    def calc_impedance(self) -> None:
-        self.Rp = self.p1.Rp
-        self.G = 1.0 / self.Rp
-
-    def set_voltage(self, new_V: float) -> None:
-        self.Vs = new_V
-
-    def accept_incident_wave(self, a: float) -> None:
-        self.a = a
-        self.p1.accept_incident_wave( -(a + self.Vs) )  # Incident wave is the negative of the voltage source
-
-    def propagate_reflected_wave(self) -> float:
-        self.b = -( self.a + self.Vs )
-        return self.b
-
-
 class SeriesVoltage(baseWDF):
     
     def __init__(self, p1: baseWDF) -> None:

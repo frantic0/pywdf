@@ -31,30 +31,39 @@ class Chua(Circuit):
         self.gain = self.decibels_to_gain()
         self.closed = closed
 
+        self.Vin_prev_i = 0.0
+
         # initialize wdf
         self.C1_value = 5.5e-9
-        # self.R2_value = 1.215e3
-        # self.R2_value = 1.428e3
-        self.R2_value = 1.8e3
+        self.R2_value = 1.3e3
+
+        self.R2_value = 1.428e3
+
         self.L3_value = 7.07e-3
         self.C4_value = 49.5e-9
 
         self.C1 = Capacitor(self.C1_value, self.fs)    # fs, needs local discretization
-        self.R2 = Resistor(self.R2_value)              # no need for discretization
+
+        # self.R2 = Resistor(self.R2_value)              # no need for discretization
+
+        # self.R2_value = 1e-3
+
+        self.Vin = ResistiveVoltageSource( None, self.R2_value )
+
         self.L3 = Inductor(self.L3_value, self.fs)     # fs, needs local discretization
         self.C4 = Capacitor(self.C4_value, self.fs)    # fs, needs local discretization
 
-        # self.Vs = ParallelVoltage(self.C4)
-
-        self.Vs = SeriesVoltage(self.C4)
-        self.P2 = ParallelAdaptor(self.L3, self.Vs)
-        self.S1 = SeriesAdaptor(self.P2, self.R2)
+        # self.Vs = SeriesVoltage(self.C4)
+        self.P2 = ParallelAdaptor(self.L3, self.C4)
+        # self.P2 = ParallelAdaptor(self.L3, self.Vs)
+        # self.S1 = SeriesAdaptor(self.P2, self.R2)
+        self.S1 = SeriesAdaptor(self.P2, self.Vin)
         self.P1 = ParallelAdaptor(self.S1, self.C1)
 
         self.g1 = -500.0e-6 
         self.g2 = -800.0e-6
         self.v0 = 1.0
-        self.R_NL = 569.2
+        self.R_NL = 569.2    
 
         self.NL = ChuaDiode(
             self.P1, 
@@ -65,7 +74,7 @@ class Chua(Circuit):
         )     
         
         # init and set circuit
-        super().__init__(self.Vs, self.NL, self.C1)
+        super().__init__(self.Vin, self.NL, self.C1)
 
 
     def process_sample(
@@ -73,7 +82,7 @@ class Chua(Circuit):
         sample: float
     ) -> float:
     
-        self.Vs.set_voltage(sample)
+        # self.Vs.set_voltage(sample)
         self.NL.accept_incident_wave(self.P1.propagate_reflected_wave())
         self.P1.accept_incident_wave(self.NL.propagate_reflected_wave())
 
@@ -91,7 +100,7 @@ class Chua(Circuit):
         Returns:
             (i, v) I-V tupple: processed sample
         """
-        self.Vs.set_voltage(sample)
+        self.Vin.set_voltage(sample)
         self.NL.accept_incident_wave(self.P1.propagate_reflected_wave())
         self.P1.accept_incident_wave(self.NL.propagate_reflected_wave())
 
