@@ -10,8 +10,8 @@
 ## About *frantic0's* pywdf fork
 
 This fork adds new examples of the Chua circuit that you can find in the structure below and a few extensions to the core *wdf.py*, including the following: 
-* a new element, the Chua diode, a non-linear negative resistor that implements a piecewise-linear I-V relationship,  
-* a new two-port series adaptor with an embedded resistive voltage source, for exciting circuits with voltage impulses, useful for the chua circuit,
+* a new element, `ChuaDiode`, a non-linear negative resistor that implements a piecewise-linear I-V relationship,  
+* a new two-port series adaptor with an embedded resistive voltage source, `SeriesVoltage` for exciting circuits with voltage impulses injection, useful for the Chua circuit,
 * an implementation of the alpha transform for digitizing linear dynamic elements and testing different stability levels, with optional parameters for choosing between the bilinear and backward Euler transforms. 
 
 
