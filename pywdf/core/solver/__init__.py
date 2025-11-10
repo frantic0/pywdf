@@ -1,1 +1,1 @@
-__all__ = ['newton_raphson', 'runge_kutta']
+__all__ = ['runge_kutta']

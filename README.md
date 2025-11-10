@@ -1,9 +1,21 @@
 # pywdf
 
+
 [![General badge](https://img.shields.io/badge/PDF-Paper-<COLOR>.svg)](https://repositori.upf.edu/handle/10230/57903)
 
 
 <code>pywdf</code> is a Python framework for modeling and simulating wave digital filter circuits. It allows users to easily create and analyze WDF circuit models in a high-level, object-oriented manner. The library includes a variety of built-in components, such as voltage sources, capacitors, diodes etc., as well as the ability to create custom components and circuits. Additionally, pywdf includes a variety of analysis tools, such as frequency response and transient analysis, to aid in the design and optimization of WDF circuits. Also included are several example circuits as shown below. 
+
+
+## About *frantic0's* pywdf fork
+
+This fork adds new examples of the Chua circuit that you can find in the structure below and a few extensions to the core *wdf.py*, including the following: 
+* a new element, the Chua diode, a non-linear negative resistor that implements a piecewise-linear I-V relationship,  
+* a new two-port series adaptor with an embedded resistive voltage source, for exciting circuits with voltage impulses, useful for the chua circuit,
+* an implementation of the alpha transform for digitizing linear dynamic elements and testing different stability levels, with optional parameters for choosing between the bilinear and backward Euler transforms. 
+
+
+
 
 ## Installation
 ```
@@ -23,6 +35,9 @@ The <code>core</code> directory contains the main source code of the repository.
 │       ├── baxandalleq.py
 │       ├── diodeclipper.py
 │       ├── lc_oscillator.py
+│       ├── chua.py					implemented by @frantic0
+│       ├── chua_minimal.py			implemented by @frantic0
+│       ├── chua_ODE.py				implemented by @frantic0
 │       ├── passivelpf.py
 │       ├── rca_mk2_sef.py
 │       ├── rclowpass.py
