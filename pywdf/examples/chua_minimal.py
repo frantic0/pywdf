@@ -43,20 +43,12 @@ class Chua(Circuit):
         self.C4_value = 49.5e-9
 
         self.C1 = Capacitor(self.C1_value, self.fs)    # fs, needs local discretization
-
-        # self.R2 = Resistor(self.R2_value)              # no need for discretization
-
-        # self.R2_value = 1e-3
-
+        self.C4 = Capacitor(self.C4_value, self.fs)    # fs, needs local discretization
+        self.L3 = Inductor(self.L3_value, self.fs)     # fs, needs local discretization
+        
         self.Vin = ResistiveVoltageSource( None, self.R2_value )
 
-        self.L3 = Inductor(self.L3_value, self.fs)     # fs, needs local discretization
-        self.C4 = Capacitor(self.C4_value, self.fs)    # fs, needs local discretization
-
-        # self.Vs = SeriesVoltage(self.C4)
         self.P2 = ParallelAdaptor(self.L3, self.C4)
-        # self.P2 = ParallelAdaptor(self.L3, self.Vs)
-        # self.S1 = SeriesAdaptor(self.P2, self.R2)
         self.S1 = SeriesAdaptor(self.P2, self.Vin)
         self.P1 = ParallelAdaptor(self.S1, self.C1)
 
@@ -65,9 +57,7 @@ class Chua(Circuit):
         self.v0 = 1.0
         self.R_NL = 569.2    
 
-        self.NL = ChuaDiode(
-            self.P1, 
-            g1=self.g1,         #  parameter 1
+        self.NL = ChuaDiode( self.P1, g1=self.g1,         #  parameter 1
             g2=self.g2,         #  parameter 2
             v0=self.v0,         # Voltage parameter
             r1=self.R_NL,       # Resistance in Ohms
