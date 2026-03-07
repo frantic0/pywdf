@@ -63,7 +63,7 @@ if __name__ == '__main__':
     ax.grid(True)
     ax.legend()  
 
-    plt.savefig("./tests/resistor_series.png")
+    plt.savefig("../../tests/resistor_series.png")
     plt.show()
 
 

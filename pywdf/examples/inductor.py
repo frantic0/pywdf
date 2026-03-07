@@ -38,8 +38,8 @@ class _Inductor(Circuit):
         # self.SW1 = Switch(self.S1)
 
         # init and set circuit
-        super().__init__(self.Vs, self.S1, self.C1)
-        # super().__init__(self.Vs, self.SW1, self.C1)
+        super().__init__(self.Vs, self.S1, self.L1)
+        # super().__init__(self.Vs, self.SW1, self.L1)
         self.set_params(self.frequency, self.closed, self.decibels)
 
     def process_sample(self, sample: float) -> float:

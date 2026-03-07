@@ -23,7 +23,7 @@ class Circuit:
         self.output = output
 
 
-    def process_sample(self, sample: float) -> float:
+    def process_sample(self, sample: float) -> tuple[float, float, float]:
         """Process an individual sample with this circuit.
 
         Note: not every circuit will follow this general pattern, in such cases users may want to overwrite this function. See example circuits

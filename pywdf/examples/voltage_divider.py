@@ -10,18 +10,24 @@ import matplotlib.pyplot as plt
 
 
 class VoltageDivider(Circuit):
-    def __init__(self, fs: int, R1_val: float, R2_val: float) -> None:
+
+    def __init__(
+            self, 
+            fs: int, 
+            R1_val: float, 
+            R2_val: float
+        ) -> None:
+        
         self.fs = fs
 
         self.R1 = Resistor(R1_val)
         self.R2 = Resistor(R2_val)
 
         self.S1 = SeriesAdaptor(self.R1, self.R2)
+ 
+        self.Vs = IdealVoltageSource(self.S1)
 
-        self.I1 = PolarityInverter(self.S1)        
-        self.Vs = IdealVoltageSource(self.I1)
-
-        super().__init__(self.Vs, self.Vs, self.R1)
+        super().__init__(self.Vs, self.Vs, self.R2)
 
     def set_R1(self,new_R):
         self.R1.set_resistance(new_R)
@@ -30,15 +36,9 @@ class VoltageDivider(Circuit):
         self.R2.set_resistance(new_R)
 
 
-    def process_sample(self, sample: float) -> float:
-        # return super().process_sample(sample) + self.R1.wave_to_voltage() + self.C1.wave_to_voltage()
-        pass
-
 if __name__ == '__main__':
      
     vd = VoltageDivider(44100, 1e4, 1e4)
-    
-    vd.plot_freqz()
 
     vs = np.arange(0.0, 6.0, 0.01)
 
@@ -60,5 +60,5 @@ if __name__ == '__main__':
     ax.grid(True)
     ax.legend()  
 
-    plt.savefig("voltage_divider.png")
+    plt.savefig("../../tests/voltage_divider.png")
     plt.show()
