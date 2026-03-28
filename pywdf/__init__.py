@@ -12,3 +12,4 @@ from .examples.passive_lpf import PassiveLPF
 from .examples.rca_mk2_sef import RCA_MK2_SEF
 from .examples.rc_lowpass import RCLowPass
 from .examples.voltage_divider import VoltageDivider
+from .examples.chua import Chua

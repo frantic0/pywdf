@@ -1,7 +1,7 @@
 from pywdf import RCA_MK2_SEF, TR_808_HatResonator, DiodeClipper, VoltageDivider, Chua
 
 #### analyze transient response of Diode Clipper to AC signal
-dc = Chua(44100, cutoff= 1000, input_gain_db = 5)
+dc = Chua(44100)
 dc.i_v_analysis(outpath='pywdf/figures/chua_circuit_transient.png')
 
 # dc = DiodeClipper(44100, cutoff= 1000, input_gain_db = 5)
