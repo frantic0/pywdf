@@ -2,7 +2,6 @@ import math
 import numpy as np
 
 from pywdf.core.solver.newton_raphson import newton_raphson
-
 # Example 1: Find the square root of 2 (root of x^2 - 2 = 0)
 def f1(x):
     return x**2 - 2
