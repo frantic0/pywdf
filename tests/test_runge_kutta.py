@@ -2,6 +2,13 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
+import sys
+from pathlib import Path
+
+# Allow direct execution: python tests/test_newton_raphson.py
+if __package__ is None or __package__ == "":
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from pywdf.core.solver.runge_kutta import rk4_solve
 
 # Example 1: Simple exponential decay dy/dt = -2y, y(0) = 1

@@ -1,6 +1,13 @@
 import math
 import numpy as np
 
+import sys
+from pathlib import Path
+
+# Allow direct execution: python tests/test_newton_raphson.py
+if __package__ is None or __package__ == "":
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from pywdf.core.solver.newton_raphson import newton_raphson
 # Example 1: Find the square root of 2 (root of x^2 - 2 = 0)
 def f1(x):
