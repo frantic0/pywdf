@@ -35,9 +35,8 @@ The <code>core</code> directory contains the main source code of the repository.
 │       ├── baxandalleq.py
 │       ├── diodeclipper.py
 │       ├── lc_oscillator.py
-│       ├── chua.py					implemented by @frantic0
-│       ├── chua_minimal.py			implemented by @frantic0
-│       ├── chua_ODE.py				implemented by @frantic0
+│       ├── chua.py					
+│       ├── chua_minimal.py			
 │       ├── passivelpf.py
 │       ├── rca_mk2_sef.py
 │       ├── rclowpass.py

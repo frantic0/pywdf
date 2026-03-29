@@ -53,7 +53,7 @@ class _Inductor(Circuit):
         if self.frequency != frequency:
             self.frequency = frequency
 
-            self.L = 1.0 / (np.square(self.twopi * frequency) * self.C)
+            self.L = 1.0 / (np.square(self.twopi * frequency) * self.L)
             self.L1.set_inductance(self.L)
 
         # update switch status

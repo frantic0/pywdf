@@ -56,6 +56,6 @@ if __name__ == '__main__':
     ax.grid(True)
     ax.legend()  
 
-    plt.savefig("../../tests/resistor_parallel.png")
+    plt.savefig("./tests/resistor_parallel.png")
     plt.show()
 

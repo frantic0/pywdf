@@ -60,5 +60,5 @@ if __name__ == '__main__':
     ax.grid(True)
     ax.legend()  
 
-    plt.savefig("../../tests/voltage_divider.png")
+    plt.savefig("./tests/voltage_divider.png")
     plt.show()
