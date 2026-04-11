@@ -22,12 +22,11 @@ class VoltageDivider(Circuit):
 
         self.R1 = Resistor(R1_val)
         self.R2 = Resistor(R2_val)
-
         self.S1 = SeriesAdaptor(self.R1, self.R2)
- 
         self.Vs = IdealVoltageSource(self.S1)
 
-        super().__init__(self.Vs, self.Vs, self.R2)
+        # To measure V_out we measure voltage across and current through the first resistor
+        super().__init__(self.Vs, self.Vs, self.R1)
 
     def set_R1(self,new_R):
         self.R1.set_resistance(new_R)

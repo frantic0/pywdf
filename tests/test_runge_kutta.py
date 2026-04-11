@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import sys
 from pathlib import Path
 
-# Allow direct execution: python tests/test_newton_raphson.py
+# Allow direct execution: python tests/test_runge_kutta.py
 if __package__ is None or __package__ == "":
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 

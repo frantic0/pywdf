@@ -50,7 +50,7 @@ class Circuit:
             sample (float): incoming sample to process
 
         Returns:
-            (i, v) I-V tupple: processed sample
+            (v, vs_i, i) I-V tupple: processed sample
         """
         self.source.set_voltage(sample)
         self.root.accept_incident_wave(self.root.next.propagate_reflected_wave())

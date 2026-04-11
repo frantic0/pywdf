@@ -22,10 +22,9 @@ class ResistorSeries(Circuit):
 
         self.R1 = Resistor(R1_val)
         self.R2 = Resistor(R2_val)
-
         self.S1 = SeriesAdaptor(self.R1, self.R2)
-        self.I1 = PolarityInverter(self.S1)  
-        self.Vs = IdealVoltageSource(self.I1)
+        # self.I1 = PolarityInverter(self.S1)  
+        self.Vs = IdealVoltageSource(self.S1)
 
         super().__init__(self.Vs, self.Vs, self.R2)
 
@@ -59,7 +58,7 @@ if __name__ == '__main__':
     ax2.set_ylabel('i[n]', color=color)
     ax2.tick_params(axis='y', labelcolor=color)
 
-    ax.set_title(loc="left", label="v[n] voltage across and i[n] current through resistor R1 ")
+    ax.set_title(loc="left", label="v[n] voltage across and i[n] current through resistor R2")
     ax.grid(True)
     ax.legend()  
 

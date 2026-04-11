@@ -11,13 +11,12 @@ from core.circuit import Circuit
 import matplotlib.pyplot as plt
 
 
-class VoltageDivider(Circuit):
+class ResistorParallel(Circuit):
     def __init__(self, fs: int, R1_val: float, R2_val: float) -> None:
         self.fs = fs
 
         self.R1 = Resistor(R1_val)
         self.R2 = Resistor(R2_val)
-
         self.P1 = ParallelAdaptor(self.R1, self.R2)
         self.Vs = IdealVoltageSource(self.P1)
 
@@ -31,7 +30,8 @@ class VoltageDivider(Circuit):
 
 
 if __name__ == '__main__':
-    vd = VoltageDivider(44100, 1e5, 1e10)
+    
+    vd = ResistorParallel(44100, 1e4, 1e4)
 
     vs = np.arange(0.0, 6.0, 0.01)
 

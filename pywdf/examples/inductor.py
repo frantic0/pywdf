@@ -14,91 +14,73 @@ from core.circuit import Circuit
 class _Inductor(Circuit):
     def __init__(
         self,
-        sample_rate: int,
-        frequency: float = 442,
-        decibels: float = -18,
-        closed: bool = True,
+        sample_rate: int
     ) -> None:
     
         self.fs = sample_rate
-        self.frequency = frequency
-        self.decibels = decibels
-        self.gain = self.decibels_to_gain()
-        self.closed = closed
-
+        # self.cutoff = cutoff
+        
         # initialize wdf
         self.L = 1.0e3
         self.twopi = 2 * np.pi
 
+        # self.Vs = ResistiveVoltageSource()
         self.L1 = Inductor(self.L, self.fs)
-
-        self.Vs = ResistiveVoltageSource()
-        self.S1 = SeriesAdaptor(self.Vs, self.L1)
-
-        # self.SW1 = Switch(self.S1)
+        # self.S1 = SeriesAdaptor(self.Vs, self.L1)
+        self.Is = IdealCurrentSource(self.L1)
 
         # init and set circuit
-        super().__init__(self.Vs, self.S1, self.L1)
-        # super().__init__(self.Vs, self.SW1, self.L1)
-        self.set_params(self.frequency, self.closed, self.decibels)
+        # super().__init__(self.Vs, self.S1, self.L1)
+        super().__init__(self.Is, self.Is, self.L1)
 
-    def process_sample(self, sample: float) -> float:
-        return super().process_sample(sample) * self.gain
+    def process_sample_i_v(self, sample: float) -> float:
+        """Process an individual sample with this circuit.
 
-    def set_params(
-        self, frequency: float, switch_closed: bool, decibels: float
-    ) -> None:
+        Note: not every circuit will follow this general pattern, in such cases users may want to overwrite this function. See example circuits
 
-        # update frequency
-        if self.frequency != frequency:
-            self.frequency = frequency
+        Args:
+            sample (float): incoming sample to process
 
-            self.L = 1.0 / (np.square(self.twopi * frequency) * self.L)
-            self.L1.set_inductance(self.L)
+        Returns:
+            (i, v) I-V tupple: processed sample
+        """
+        self.Is.set_current(sample)
+        self.Is.accept_incident_wave(self.L1.propagate_reflected_wave())
+        self.L1.accept_incident_wave(self.Is.propagate_reflected_wave())
 
-        # update switch status
-        if switch_closed != self.closed:
-            self.SW1.set_closed(switch_closed)
-
-        # update gain
-        if self.decibels != decibels:
-            self.decibels = decibels
-            self.gain = self.decibels_to_gain()
-
-    def decibels_to_gain(self):
-        return 10 ** (self.decibels / 20.0)
+        return ( self.source.wave_to_voltage(), self.source.wave_to_current(), self.output.wave_to_current() ) 
 
 
 if __name__ == "__main__":
 
-    # set params
-    fs = 48e3
-    frequency = 440
-    decibels = 0
-    switch_closed = True
+    fs = 44100
+    f = 4
+    duration = 1.0
 
-    _inductor = _Inductor(fs)
-    _inductor.set_params(frequency, switch_closed, decibels)  # update params
+    _inductor = _Inductor(sample_rate=fs)
 
-    # plot transfer function
-    plt_dir = src_dir.parent / "data" / "plot"
-    plt_dir.mkdir(exist_ok=True, parents=True)
-    out_path = plt_dir / f"{script_path.stem}_{frequency}Hz.png"
-    _inductor.plot_freqz(out_path)
+    t = np.linspace(0, duration, int(fs * duration), endpoint=False)
 
-    # generate sinusoid
-    out = _inductor.process_signal(np.ones((int(fs))))
-    out = out - 1  # remove DC offset [0, 2]
+    sine = np.sin(2 * np.pi * f * t)  
 
-    plt.figure(figsize=(10, 4))
-    plt.plot(out)
-    plt.xlim([0, fs])
-    plt.title(f"{frequency}Hz sinewave")
-    plt.tight_layout()
+    y = _inductor.process_i_v_signals(sine)
+
+    v, _, i  = zip(*y)
+
+    _, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 6.5))
+    ax.plot(v, color="r", label="voltage across", alpha=0.75)
+    ax.set_xlabel("sample")
+    ax.set_ylabel("v[n]")
+    color = 'tab:blue'
+    ax2 = ax.twinx() 
+    ax2.set_ylabel('i[n]', color=color)
+    ax2.tick_params(axis='y', labelcolor=color)
+    ax2.plot(i, color=color, label="current through", alpha=0.75)
+
+    ax.set_title(loc="left", label="v[n] voltage across and i[n] current through inductor L")
+    ax.legend()  
+    ax2.legend()  
+    ax.grid(True)
+
+    plt.savefig("./tests/inductor.png")
     plt.show()
-
-    # estimate pitch using zerocrossing
-    zero_crossings = np.where(np.diff(np.sign(out)))[0]
-    T = (zero_crossings[2] - zero_crossings[0]) / fs
-    f = 1 / T
-    print(f"T = {T:.6f}[s]\nf = {f:.3f}[Hz]")
