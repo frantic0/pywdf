@@ -52,7 +52,7 @@ if __name__ == "__main__":
     f = 40
     duration = 0.1
 
-    cap = _Capacitor(fs, 0.0, 1.0)
+    cap = _Capacitor(fs, 0.0, 1.0)        # 0.0 – Backward Euler; 1.0 – Bilinear Transform 
    
     t = np.linspace(0, duration, int(fs * duration), endpoint=False)
 

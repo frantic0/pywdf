@@ -529,7 +529,7 @@ class ChuaDiode(rootWDF):
             g1: float, 
             g2: float, 
             r1: float, 
-            v0: float
+            v0: float,
         ) -> None:
         """
         Sets diode specific parameters.
@@ -539,11 +539,11 @@ class ChuaDiode(rootWDF):
             g2: Second conductance parameter  
             r1: Resistance parameter
         """
-        self.G1 = g1
-        self.G2 = g2
-        self.R1 = r1
-        self.V0 = v0
-    
+        self.G1 = (1.0 - g1 * r1) / (1.0 + g1 * r1)
+        self.G2 = (1.0 - g2 * r1) / (1.0 + g2 * r1)
+        self.a_0 = v0 * (1.0 + g2 * r1)
+
+
     def calc_impedance(self):
         """Calculate impedance - implementation depends on specific circuit context"""
         # Implementation would depend on the specific WDF framework
@@ -567,18 +567,13 @@ class ChuaDiode(rootWDF):
         This implements the piecewise linear characteristic of the Chua diode
         using the absolute value function to create the nonlinear behavior.
         
-        Args:
-            a0: The incident wave value
-            
         Returns:
             The reflected wave value
         """
         # TODO: g1 and g2 do not need to be calculated for every reflected calculation, just a_0
-        g1 = (1.0 - self.G1 * self.R1) / (1.0 + self.G1 * self.R1)
-        g2 = (1.0 - self.G2 * self.R1) / (1.0 + self.G2 * self.R1)
-        a_0 = self.V0 * (1.0 + self.G2 * self.R1)
+
         
-        self.b = ( g1 * self.a + 0.5 * (g2 - g1) * (abs( self.a + a_0 ) - abs( self.a - a_0 )))
+        self.b = ( self.G1 * self.a + 0.5 * (self.G2 - self.G1) * (abs( self.a + self.a_0 ) - abs( self.a - self.a_0 )))
         
         return self.b
         

@@ -23,9 +23,7 @@ class _Inductor(Circuit):
         self.fs = sample_rate
         self.twopi = 2 * np.pi
 
-        # self.Vs = ResistiveVoltageSource()
         self.L1 = Inductor(self.L, self.fs, alpha)
-        # self.S1 = SeriesAdaptor(self.Vs, self.L1)
         self.Is = IdealCurrentSource(self.L1)
 
         # init and set circuit
@@ -55,7 +53,7 @@ if __name__ == "__main__":
     f = 4
     duration = 1.0
 
-    _inductor = _Inductor(fs, 1.0)
+    _inductor = _Inductor(fs, 1.0)      # 0.0 – Backward Euler; 1.0 – Bilinear Transform 
 
     t = np.linspace(0, duration, int(fs * duration), endpoint=False)
 
@@ -69,6 +67,7 @@ if __name__ == "__main__":
     ax.plot(v, color="r", label="voltage across", alpha=0.75)
     ax.set_xlabel("sample")
     ax.set_ylabel("v[n]")
+    
     color = 'tab:blue'
     ax2 = ax.twinx() 
     ax2.set_ylabel('i[n]', color=color)
