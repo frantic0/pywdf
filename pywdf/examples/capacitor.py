@@ -13,15 +13,14 @@ class _Capacitor(Circuit):
 
     def __init__(
             self, 
-            sample_rate: int, 
-            cutoff: float
+            sample_rate: int,
+            tolerance: float,
+            alpha: float,
         ) -> None:
 
+        self.C  = 47e-9          # capacitance in Farads
         self.fs = sample_rate
-        self.cutoff = cutoff
-        
-        self.C = 47e-9          # capacitance in Farads
-        self.C1 = Capacitor(self.C, self.fs)
+        self.C1 = Capacitor(self.C, self.fs, tolerance, alpha)
         self.Vs = IdealVoltageSource(self.C1)
 
         super().__init__(self.Vs, self.Vs, self.C1)
@@ -42,7 +41,7 @@ class _Capacitor(Circuit):
         self.Vs.accept_incident_wave(self.C1.propagate_reflected_wave())
         self.C1.accept_incident_wave(self.Vs.propagate_reflected_wave())
 
-        return ( self.source.wave_to_voltage(), self.source.wave_to_current(), self.output.wave_to_current() ) 
+        return ( self.output.wave_to_voltage(), self.source.wave_to_current(), self.output.wave_to_current() ) 
 
 
 
@@ -50,14 +49,13 @@ class _Capacitor(Circuit):
 if __name__ == "__main__":
     
     fs = 44100
-    f = 4
-    # duration = .25
-    duration = 0.0001
+    f = 40
+    duration = 0.1
 
-    cap = _Capacitor(fs, 1000)
+    cap = _Capacitor(fs, 0.0, 1.0)
    
     t = np.linspace(0, duration, int(fs * duration), endpoint=False)
-    print(t)
+
     sine = np.sin(2 * np.pi * f * t)  
 
     y = cap.process_i_v_signals(sine)
@@ -68,13 +66,17 @@ if __name__ == "__main__":
     ax.plot(v, color="r", label="voltage across", alpha=0.75)
     ax.set_xlabel("sample")
     ax.set_ylabel("v[n]")
+
     color = 'tab:blue'
     ax2 = ax.twinx() 
     ax2.set_ylabel('i[n]', color=color)
     ax2.tick_params(axis='y', labelcolor=color)
     ax2.plot(i, color=color, label="current through", alpha=0.75)
 
-    ax.set_title(loc="left", label="v[n] voltage across and i[n] current through capacitor C1 ")
+    ax.set_title(
+        loc="left", 
+        label="v[n] voltage across and i[n] current through capacitor C1 ")
+    
     ax.legend()  
     ax2.legend()  
     ax.grid(True)

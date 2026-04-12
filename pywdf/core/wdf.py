@@ -213,14 +213,14 @@ class Capacitor(baseWDF):
 
 
 class Inductor(baseWDF):
-    def __init__(self, 
-                L: float, 
-                fs: int,
-                alpha: float = 1.0
-        ) -> None:
-        '''
-        TODO: Why does inductor have a different constructor than capacitor?
-        '''
+    
+    def __init__(
+        self, 
+        L: float, 
+        fs: int,
+        alpha: float = 1.0
+    ) -> None:
+
         self.fs = fs
         self.L = L
         self.z = 0.0

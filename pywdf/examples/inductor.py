@@ -12,25 +12,23 @@ from core.circuit import Circuit
 
 
 class _Inductor(Circuit):
+    
     def __init__(
         self,
-        sample_rate: int
+        sample_rate: int,
+        alpha: int
     ) -> None:
     
-        self.fs = sample_rate
-        # self.cutoff = cutoff
-        
-        # initialize wdf
         self.L = 1.0e3
+        self.fs = sample_rate
         self.twopi = 2 * np.pi
 
         # self.Vs = ResistiveVoltageSource()
-        self.L1 = Inductor(self.L, self.fs)
+        self.L1 = Inductor(self.L, self.fs, alpha)
         # self.S1 = SeriesAdaptor(self.Vs, self.L1)
         self.Is = IdealCurrentSource(self.L1)
 
         # init and set circuit
-        # super().__init__(self.Vs, self.S1, self.L1)
         super().__init__(self.Is, self.Is, self.L1)
 
     def process_sample_i_v(self, sample: float) -> float:
@@ -48,7 +46,7 @@ class _Inductor(Circuit):
         self.Is.accept_incident_wave(self.L1.propagate_reflected_wave())
         self.L1.accept_incident_wave(self.Is.propagate_reflected_wave())
 
-        return ( self.source.wave_to_voltage(), self.source.wave_to_current(), self.output.wave_to_current() ) 
+        return ( self.output.wave_to_voltage(), self.source.wave_to_current(), self.output.wave_to_current() ) 
 
 
 if __name__ == "__main__":
@@ -57,7 +55,7 @@ if __name__ == "__main__":
     f = 4
     duration = 1.0
 
-    _inductor = _Inductor(sample_rate=fs)
+    _inductor = _Inductor(fs, 1.0)
 
     t = np.linspace(0, duration, int(fs * duration), endpoint=False)
 
